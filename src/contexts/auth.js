@@ -108,6 +108,8 @@ function AuthProvider({ children }) {
             logout,
             loadingAuth,
             loading,
+            storageUser,
+            setUSer,
         }}>
             {children}
         </AuthContext.Provider>
