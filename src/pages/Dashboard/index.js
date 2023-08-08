@@ -59,7 +59,34 @@ export default function Dashboard() {
                                     Suporte
                                 </td>
                                 <td data-label="Status">
-                                    Em aberto
+                                    <span className="badge" style={{ backgroundColor: '#999' }}>
+                                        Em aberto
+                                    </span>
+                                </td>
+                                <td data-label="Cadastrado">
+                                    08/08/2023
+                                </td>
+                                <td data-label="#">
+                                    <button className="action" style={{ backgroundColor: '#3583f6' }}>
+                                        <FiSearch size={17} color="#fffF" />
+                                    </button>
+                                    <button className="action" style={{ backgroundColor: '#f6a935' }}>
+                                        <FiEdit2 size={17} color="#fff" />
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td data-label="Cliente">
+                                    Informática TECH
+                                </td>
+                                <td data-label="Assunto">
+                                    Suporte
+                                </td>
+                                <td data-label="Status">
+                                    <span className="badge" style={{ backgroundColor: '#999' }}>
+                                        Em aberto
+                                    </span>
                                 </td>
                                 <td data-label="Cadastrado">
                                     08/08/2023
