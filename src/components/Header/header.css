@@ -54,7 +54,7 @@
 
 .content {
   margin-left: 200px;
-  padding: 1 16px;
+  padding: 1px 16px;
 }
 
 @media screen and (max-width: 700px) {
