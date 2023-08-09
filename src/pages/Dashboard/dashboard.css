@@ -5,8 +5,8 @@
   padding: 0.5em;
   border-radius: 5px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   border: 0;
   font-weight: 600;
   color: #fff;
@@ -49,8 +49,7 @@ table tr {
   padding: 0.35em;
 }
 
-table,
-tr,
+table th,
 table td {
   padding: 0.6em;
   text-align: center;
