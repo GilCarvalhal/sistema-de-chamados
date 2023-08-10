@@ -5,7 +5,7 @@ import { FiEdit2, FiMessageSquare, FiPlus, FiSearch } from 'react-icons/fi'
 import Header from '../../components/Header'
 import Title from '../../components/Title'
 
-import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
+import { collection, getDocs, limit, orderBy, query, startAfter } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
 import { db } from '../../services/firebaseConnection'
 
@@ -22,12 +22,16 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [isEmpty, setIsEmpty] = useState(false)
 
+    const [lastDocs, setLastDocs] = useState()
+    const [loadingMore, setLoadingMore] = useState(false)
+
 
     useEffect(() => {
         async function loadChamados() {
             const q = query(listRef, orderBy('created', 'desc'), limit(5));
 
             const querySnapshot = await getDocs(q)
+            setChamados([]) // Para não duplicar os chamados
             await updateState(querySnapshot)
 
             setLoading(false);
@@ -60,12 +64,15 @@ export default function Dashboard() {
                 })
             })
 
-            setChamados(chamados => [...chamados, ...lista])
+            const lastDocs = querySnapshot.docs[querySnapshot.docs.length - 1] // Pegando o último item
 
+            setChamados(chamados => [...chamados, ...lista])
+            setLastDocs(lastDocs)
 
         } else {
             setIsEmpty(true);
         }
+        setLoadingMore(false)
     }
 
     if (loading) {
@@ -88,6 +95,13 @@ export default function Dashboard() {
         )
     }
 
+    async function handleMore() {
+        setLoadingMore(true)
+
+        const q = query(listRef, orderBy('created', 'desc'), startAfter(lastDocs), limit(5))
+        const querySnapshot = await getDocs(q)
+        await updateState(querySnapshot)
+    }
 
     return (
         <div>
@@ -131,7 +145,7 @@ export default function Dashboard() {
                                                 <td data-label="Cliente">{item.cliente}</td>
                                                 <td data-label="Assunto">{item.assunto}</td>
                                                 <td data-label="Status">
-                                                    <span className="badge" style={{ backgroundColor: '#999' }}>
+                                                    <span className="badge" style={{ backgroundColor: item.status === 'Aberto' ? '#5cb85c' : '#999' }}>
                                                         {item.status}
                                                     </span>
                                                 </td>
@@ -150,6 +164,9 @@ export default function Dashboard() {
                                     })}
                                 </tbody>
                             </table>
+
+                            {loadingMore && <h3>Buscando mais chamados...</h3>}
+                            {!loadingMore && !isEmpty && <button className='btn-more' onClick={handleMore}>Buscar mais</button>}
                         </>
                     )}
                 </>
