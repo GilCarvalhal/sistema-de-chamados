@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../contexts/auth'
 
-import { FiEdit2, FiMessageSquare, FiPlus, FiSearch } from 'react-icons/fi'
 import Header from '../../components/Header'
 import Title from '../../components/Title'
+import { FiPlus, FiMessageSquare, FiSearch, FiEdit2 } from 'react-icons/fi'
 
-import { collection, getDocs, limit, orderBy, query, startAfter } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
+import { collection, getDocs, orderBy, limit, startAfter, query } from 'firebase/firestore'
 import { db } from '../../services/firebaseConnection'
 
 import { format } from 'date-fns'
@@ -21,10 +21,13 @@ export default function Dashboard() {
 
     const [chamados, setChamados] = useState([])
     const [loading, setLoading] = useState(true);
-    const [isEmpty, setIsEmpty] = useState(false)
 
+    const [isEmpty, setIsEmpty] = useState(false)
     const [lastDocs, setLastDocs] = useState()
-    const [loadingMore, setLoadingMore] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const [showPostModal, setShowPostModal] = useState(false);
+    const [detail, setDetail] = useState()
 
 
     useEffect(() => {
@@ -32,7 +35,8 @@ export default function Dashboard() {
             const q = query(listRef, orderBy('created', 'desc'), limit(5));
 
             const querySnapshot = await getDocs(q)
-            setChamados([]) // Para não duplicar os chamados
+            setChamados([]);
+
             await updateState(querySnapshot)
 
             setLoading(false);
@@ -65,43 +69,52 @@ export default function Dashboard() {
                 })
             })
 
-            const lastDocs = querySnapshot.docs[querySnapshot.docs.length - 1] // Pegando o último item
+            const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] // Pegando o ultimo item
 
             setChamados(chamados => [...chamados, ...lista])
-            setLastDocs(lastDocs)
+            setLastDocs(lastDoc);
 
         } else {
             setIsEmpty(true);
         }
-        setLoadingMore(false)
+
+        setLoadingMore(false);
+
     }
+
+
+    async function handleMore() {
+        setLoadingMore(true);
+
+        const q = query(listRef, orderBy('created', 'desc'), startAfter(lastDocs), limit(5));
+        const querySnapshot = await getDocs(q);
+        await updateState(querySnapshot);
+
+    }
+
+
+    function toggleModal(item) {
+        setShowPostModal(!showPostModal)
+        setDetail(item)
+    }
+
 
     if (loading) {
         return (
             <div>
                 <Header />
 
-                <div className='content'>
+                <div className="content">
                     <Title name="Tickets">
                         <FiMessageSquare size={25} />
                     </Title>
 
-                    <div className='container dashboard'>
-                        <span>
-                            Buscando Chamados...
-                        </span>
+                    <div className="container dashboard">
+                        <span>Buscando chamados...</span>
                     </div>
                 </div>
             </div>
         )
-    }
-
-    async function handleMore() {
-        setLoadingMore(true)
-
-        const q = query(listRef, orderBy('created', 'desc'), startAfter(lastDocs), limit(5))
-        const querySnapshot = await getDocs(q)
-        await updateState(querySnapshot)
     }
 
     return (
@@ -152,7 +165,7 @@ export default function Dashboard() {
                                                 </td>
                                                 <td data-label="Cadastrado">{item.createdFormat}</td>
                                                 <td data-label="#">
-                                                    <button className="action" style={{ backgroundColor: '#3583f6' }}>
+                                                    <button className="action" style={{ backgroundColor: '#3583f6' }} onClick={() => toggleModal(item)}>
                                                         <FiSearch color='#FFF' size={17} />
                                                     </button>
                                                     <Link to={`/new/${item.id}`} className="action" style={{ backgroundColor: '#f6a935' }}>
@@ -160,21 +173,26 @@ export default function Dashboard() {
                                                     </Link>
                                                 </td>
                                             </tr>
-
                                         )
                                     })}
                                 </tbody>
                             </table>
 
+
                             {loadingMore && <h3>Buscando mais chamados...</h3>}
-                            {!loadingMore && !isEmpty && <button className='btn-more' onClick={handleMore}>Buscar mais</button>}
+                            {!loadingMore && !isEmpty && <button className="btn-more" onClick={handleMore}>Buscar mais</button>}
                         </>
                     )}
                 </>
 
             </div>
-            
-            <Modal />
+
+            {showPostModal && (
+                <Modal
+                    conteudo={detail}
+                    close={() => setShowPostModal(!showPostModal)}
+                />
+            )}
 
         </div>
     )
